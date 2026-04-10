@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: arenahub
+      POSTGRES_PASSWORD: arenahub
+      POSTGRES_DB: arenahub
+    ports:
+      - 5432:5432
