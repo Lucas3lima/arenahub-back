@@ -2,10 +2,17 @@
 
 Este documento detalha o comportamento esperado do sistema ArenaHub para garantir consistência e evitar conflitos.
 
-## 1. Controle de Acesso e Paywall
-- **Páginas Públicas**: Sempre acessíveis.
-- **App de Gestão**: Acesso permitido apenas para `Company` com `SaaSSubscription` ativa.
-- **Redirecionamento**: Usuários autenticados de empresas inadimplentes ou sem plano devem ser enviados para a tela de planos.
+## 1. Onboarding, Trial e Paywall
+- **Criação de Conta**: O cadastro inicial (Nome, Email, Senha) não exige cartão de crédito.
+- **Trial de 14 Dias**: Ao finalizar o setup inicial (Arena e Quadras), a empresa ganha automaticamente 14 dias de acesso ao **Plano Pro (Black)**.
+- **Acesso ao Painel**:
+    - **Durante o Trial**: Acesso total a todas as funcionalidades do Plano Pro.
+    - **Fim do Trial (Paywall)**: No 15º dia, o acesso ao painel de gestão é bloqueado por uma tela de pagamento.
+    - **Link Público**: O link de reservas da arena pode ser desativado ou exibir mensagem de manutenção caso o trial expire sem a escolha de um plano.
+- **Travas de Plano (Limites)**:
+    - O sistema impede a criação de novos recursos (Arenas, Quadras, Usuários) que excedam o limite do plano contratado.
+    - Botões de criação de novos recursos permanecem visíveis, mas disparam um modal de upgrade caso o limite seja atingido.
+- **Redirecionamento**: Usuários de empresas com trial expirado ou assinaturas inadimplentes são redirecionados para a tela de seleção de planos.
 
 ## 2. Modelo de Disponibilidade e Conflitos
 A agenda de uma quadra (`Court`) é a soma de todos os espaços não ocupados.
