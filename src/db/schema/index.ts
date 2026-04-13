@@ -43,7 +43,7 @@ export const companies = pgTable('companies', {
   slug: text().notNull().unique(), // Ex: arenahub.com/minha-arena
 
   // Controle de Assinatura e Trial
-  currentPlan: planEnum('current_plan').default('free_trial').notNull(),
+  currentPlan: planEnum('current_plan').default('pro').notNull(),
   trialEndsAt: timestamp({ withTimezone: true }).notNull(),
   isActive: boolean().default(true).notNull(),
   maxCourts: integer(),

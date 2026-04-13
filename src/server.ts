@@ -11,6 +11,7 @@ import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
 import ScalarApiReference from '@scalar/fastify-api-reference'
 import { env } from './env'
+import { createAccountRoute } from './routes/auth/create-accounts'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -34,6 +35,8 @@ app.register(fastifySwagger, {
 app.register(ScalarApiReference, {
   routePrefix: '/docs',
 })
+
+app.register(createAccountRoute)
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }, () => {
   console.log('HTTP server running on http://localhost:3333 !')
