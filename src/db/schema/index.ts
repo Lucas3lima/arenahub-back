@@ -8,7 +8,7 @@ import {
   pgEnum,
   uniqueIndex,
 } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 
 // Enums para padronizar os dados
 export const planEnum = pgEnum('plan', ['free_trial', 'start', 'growth', 'pro'])
@@ -34,27 +34,105 @@ export const classStatusEnum = pgEnum('class_status', [
   'scheduled',
   'cancelled',
 ])
+export const subscriptionStatusEnum = pgEnum('subscription_status', [
+  'trialing',
+  'active',
+  'past_due',
+  'cancelled',
+  'expired',
+])
 
-// 1. EMPRESAS (A conta principal do SaaS)
-// Controla a assinatura, o trial e agrupa todas as unidades físicas.
-export const companies = pgTable('companies', {
+export const plans = pgTable('plans', {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
-  slug: text().notNull().unique(), // Ex: arenahub.com/minha-arena
+  slug: text().notNull().unique(),
+  description: text().notNull(),
+  price: integer().notNull(),
 
-  // Controle de Assinatura e Trial
-  currentPlan: planEnum('current_plan').default('pro').notNull(),
-  trialEndsAt: timestamp({ withTimezone: true }).notNull(),
+  maxCourts: integer().notNull(),
+  maxUsers: integer().notNull(),
+  maxFacilities: integer().notNull(),
+  trialDays: integer().default(0).notNull(),
+
+  hasAdvancedReports: boolean().default(false).notNull(),
+  hasCustomPermissions: boolean().default(false).notNull(),
+  hasCancellationPolicies: boolean().default(false).notNull(),
+  hasPublicPage: boolean().default(true).notNull(),
+  hasOnlineReservations: boolean().default(true).notNull(),
+  hasFinancialControl: boolean().default(true).notNull(),
+  hasOnlinePayment: boolean().default(false).notNull(),
+
   isActive: boolean().default(true).notNull(),
-  maxCourts: integer(),
-  maxFacilities: integer(),
-  maxUsers: integer(),
-
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
 
-// 2. USUÁRIOS (Donos e Funcionários)
+export const defaultPlansSeed = [
+  {
+    name: 'Free Trial',
+    slug: 'free_trial',
+    description: 'Período de teste gratuito com funcionalidades iniciais.',
+    price: 0,
+    maxCourts: 2,
+    maxUsers: 3,
+    maxFacilities: 1,
+    trialDays: 14,
+    hasPublicPage: true,
+    hasOnlineReservations: true,
+    hasFinancialControl: true,
+  },
+  {
+    name: 'Start',
+    slug: 'start',
+    description: 'Plano base para operações iniciantes.',
+    price: 9990,
+    maxCourts: 2,
+    maxUsers: 3,
+    maxFacilities: 1,
+    trialDays: 0,
+    hasPublicPage: true,
+    hasOnlineReservations: true,
+    hasFinancialControl: true,
+  },
+  {
+    name: 'Growth',
+    slug: 'growth',
+    description: 'Plano para arenas em crescimento.',
+    price: 15990,
+    maxCourts: 5,
+    maxUsers: 8,
+    maxFacilities: 1,
+    trialDays: 0,
+    hasAdvancedReports: true,
+    hasCustomPermissions: true,
+    hasCancellationPolicies: true,
+    hasPublicPage: true,
+    hasOnlineReservations: true,
+    hasFinancialControl: true,
+    hasOnlinePayment: true,
+  },
+  {
+    name: 'Pro',
+    slug: 'pro',
+    description: 'Plano para operações robustas com múltiplas unidades.',
+    price: 23000,
+    maxCourts: -1,
+    maxUsers: -1,
+    maxFacilities: 3,
+    trialDays: 0,
+    hasAdvancedReports: true,
+    hasCustomPermissions: true,
+    hasCancellationPolicies: true,
+    hasPrioritySupport: true,
+    hasAuditLogs: true,
+    hasPublicPage: true,
+    hasOnlineReservations: true,
+    hasFinancialControl: true,
+    hasOnlinePayment: true,
+  },
+] as const
+
+// 1. USUÁRIOS (Donos e Funcionários)
 export const users = pgTable('users', {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
@@ -64,6 +142,47 @@ export const users = pgTable('users', {
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
+
+// 2. EMPRESAS (A conta principal do SaaS)
+export const companies = pgTable('companies', {
+  id: uuid().primaryKey().defaultRandom(),
+  name: text().notNull(),
+  slug: text().notNull().unique(), // Ex: arenahub.com/minha-arena
+
+  isActive: boolean().default(true).notNull(),
+
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+})
+
+export const subscriptions = pgTable(
+  'subscriptions',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    companyId: uuid()
+      .references(() => companies.id, { onDelete: 'cascade' })
+      .notNull(),
+    planId: uuid()
+      .references(() => plans.id, { onDelete: 'restrict' })
+      .notNull(),
+    status: subscriptionStatusEnum('status').default('active').notNull(),
+    currentPeriodStartsAt: timestamp({ withTimezone: true }).notNull(),
+    currentPeriodEndsAt: timestamp({ withTimezone: true }).notNull(),
+
+    trialEndsAt: timestamp({ withTimezone: true }),
+    cancelledAt: timestamp({ withTimezone: true }),
+    endedAt: timestamp({ withTimezone: true }),
+    externalSubscriptionId: text(),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('active_subscription_idx')
+      .on(table.companyId)
+      .where(sql`${table.status} IN ('trialing', 'active', 'past_due')`),
+  ],
+)
 
 // 3. VÍNCULO USUÁRIO <-> EMPRESA (Permite convidar funcionários)
 export const companyUsers = pgTable(
@@ -173,11 +292,27 @@ export const classes = pgTable('classes', {
 // === DEFINIÇÃO DE RELACIONAMENTOS (Para facilitar as queries no Drizzle) ===
 
 export const companiesRelations = relations(companies, ({ many }) => ({
+  subscriptions: many(subscriptions),
   companyUsers: many(companyUsers),
   facilities: many(facilities),
   bookings: many(bookings),
   memberships: many(memberships),
   classes: many(classes),
+}))
+
+export const plansRelations = relations(plans, ({ many }) => ({
+  subscriptions: many(subscriptions),
+}))
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  company: one(companies, {
+    fields: [subscriptions.companyId],
+    references: [companies.id],
+  }),
+  plan: one(plans, {
+    fields: [subscriptions.planId],
+    references: [plans.id],
+  }),
 }))
 
 export const usersRelations = relations(users, ({ many }) => ({

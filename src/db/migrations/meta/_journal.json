@@ -8,6 +8,13 @@
       "when": 1776037889787,
       "tag": "0000_slim_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776207199825,
+      "tag": "0001_nostalgic_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }
