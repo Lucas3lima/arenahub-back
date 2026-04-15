@@ -15,6 +15,7 @@ import { createAccountRoute } from './routes/auth/create-accounts'
 import fastifyJwt from '@fastify/jwt'
 import fastifyCookie from '@fastify/cookie'
 import { authenticateWithPasswordRoute } from './routes/auth/authenticate-with-password'
+import { createCompaniesRoute } from './routes/companies/create-companies'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -53,6 +54,9 @@ app.register(ScalarApiReference, {
 
 app.register(createAccountRoute)
 app.register(authenticateWithPasswordRoute)
+
+//Companies
+app.register(createCompaniesRoute)
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }, () => {
   console.log('HTTP server running on http://localhost:3333 !')

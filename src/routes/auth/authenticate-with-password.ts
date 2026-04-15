@@ -35,11 +35,9 @@ export const authenticateWithPasswordRoute: FastifyPluginAsyncZod = async (
         })
 
         const token = await reply.jwtSign(
+          {},
           {
-            sub: user.id,
-          },
-          {
-            sign: { expiresIn: '2d' },
+            sign: { sub: user.id, expiresIn: '2d' },
           },
         )
 

@@ -1,0 +1,24 @@
+import { eq } from 'drizzle-orm'
+import { db } from '../../db'
+import { companyUsers } from '../../db/schema'
+import type {
+  CompanyUsersRepository,
+  CreateCompanyUsersInput,
+} from '../company-users-repository'
+
+export class DrizzleCompanyUsersRepository implements CompanyUsersRepository {
+  async findByCompanyId(id: string) {
+    const [companyUser] = await db
+      .select()
+      .from(companyUsers)
+      .where(eq(companyUsers.companyId, id))
+      .limit(1)
+
+    return companyUser
+  }
+
+  async create(data: CreateCompanyUsersInput) {
+    const [companyUser] = await db.insert(companyUsers).values(data).returning()
+    return companyUser
+  }
+}
