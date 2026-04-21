@@ -7,6 +7,9 @@ import { DrizzleUsersRepository } from '../../repositories/drizzle/drizzle-users
 import { CreateCompanies } from '../../use-cases/create-companies'
 import { checkRequestJWT } from '../_hooks/check-request-jwt'
 import { getAuthenticatedUser } from '../../utils/get-authenticate-user'
+import { CompanyUserAlreadyExistsError } from '../../_errors/company-users-already-exists-error copy'
+import { CompanyAlreadyExistsError } from '../../_errors/company-already-exists-error'
+import { UserNotFoundError } from '../../_errors/user-not-found-error'
 
 export const createCompaniesRoute: FastifyPluginAsyncZod = async (app) => {
   app.post(
@@ -19,6 +22,18 @@ export const createCompaniesRoute: FastifyPluginAsyncZod = async (app) => {
         body: z.object({
           name: z.string(),
         }),
+        response: {
+          201: z.object({
+            companyId: z.string(),
+            companyUserId: z.string(),
+          }),
+          409: z.object({
+            message: z.string(),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     async (request, reply) => {
@@ -45,7 +60,16 @@ export const createCompaniesRoute: FastifyPluginAsyncZod = async (app) => {
           .send({ companyId: company.id, companyUserId: companyUser.id })
       } catch (err) {
         if (err instanceof UserAlreadyExistsError) {
-          return reply.status(400).send({ message: err.message })
+          return reply.status(409).send({ message: err.message })
+        }
+        if (err instanceof CompanyUserAlreadyExistsError) {
+          return reply.status(409).send({ message: err.message })
+        }
+        if (err instanceof CompanyAlreadyExistsError) {
+          return reply.status(409).send({ message: err.message })
+        }
+        if (err instanceof UserNotFoundError) {
+          return reply.status(404).send({ message: err.message })
         }
         throw err
       }

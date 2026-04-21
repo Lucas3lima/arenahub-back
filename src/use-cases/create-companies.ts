@@ -1,3 +1,6 @@
+import { CompanyAlreadyExistsError } from '../_errors/company-already-exists-error'
+import { CompanyUserAlreadyExistsError } from '../_errors/company-users-already-exists-error copy'
+import { UserNotFoundError } from '../_errors/user-not-found-error'
 import type { CompaniesRepository } from '../repositories/companies-repository'
 import type { CompanyUsersRepository } from '../repositories/company-users-repository'
 import type { UsersRepository } from '../repositories/users-repository'
@@ -26,7 +29,15 @@ export class CreateCompanies {
     const userExists = await this.usersRepository.findById(userId)
 
     if (!userExists) {
-      throw new Error('User not found')
+      throw new UserNotFoundError()
+    }
+
+    const companyUserExists = await this.companyUsersRepository.findByUserId(
+      userExists.id,
+    )
+
+    if (companyUserExists) {
+      throw new CompanyUserAlreadyExistsError()
     }
 
     const slug = createSlug(name)
@@ -34,7 +45,7 @@ export class CreateCompanies {
     const companyExists = await this.companiesRepository.findBySlug(slug)
 
     if (companyExists) {
-      throw new Error('Company already exists')
+      throw new CompanyAlreadyExistsError()
     }
 
     const company = await this.companiesRepository.create({

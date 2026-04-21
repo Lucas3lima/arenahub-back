@@ -7,4 +7,9 @@ export type CreateCompanyUsersInput = InferInsertModel<typeof companyUsers>
 export interface CompanyUsersRepository {
   create(data: CreateCompanyUsersInput): Promise<CompanyUsers>
   findByCompanyId(id: string): Promise<CompanyUsers | null>
+  findByCompanyIdAndUserId(
+    companyId: string,
+    userId: string,
+  ): Promise<CompanyUsers | null>
+  findByUserId(userId: string): Promise<CompanyUsers | null>
 }

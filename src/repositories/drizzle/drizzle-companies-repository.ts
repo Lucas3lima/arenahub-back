@@ -11,6 +11,21 @@ export class DrizzleCompaniesRepository implements CompaniesRepository {
     const [company] = await db.insert(companies).values(data).returning()
     return company
   }
+
+  async findById(id: string) {
+    const [company] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.id, id))
+      .limit(1)
+
+    if (!company) {
+      return null
+    }
+
+    return company
+  }
+
   async findBySlug(slug: string) {
     const [company] = await db
       .select()

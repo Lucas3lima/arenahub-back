@@ -16,8 +16,8 @@ Ideal para arenas iniciantes ou com pouca estrutura.
 Para arenas em crescimento com maior volume de clientes.
 - **Limite de Quadras**: Até 5 quadras.
 - **Limite de Arenas**: 1 arena (unidade).
-- **Usuários Internos**: Até 8.
-- **Funcionalidades**: Tudo do Base + Relatórios Avançados (Ocupação/Receita), Permissões Customizadas, Políticas de Cancelamento.
+- **Usuários Internos**: Até 5.
+- **Funcionalidades**: Tudo do Start + Relatórios Avançados (Ocupação/Receita), Permissões Customizadas, Políticas de Cancelamento.
 - **Preço Sugerido**: R$ 159,90 - R$ 180,00 / mês.
 
 ### 3. Plano Pro (Black)
@@ -25,7 +25,7 @@ Para operações robustas ou redes locais.
 - **Limite de Quadras**: Ilimitadas.
 - **Limite de Arenas**: **Até 3 arenas** (unidades).
 - **Usuários Internos**: Ilimitados.
-- **Funcionalidades**: Tudo do Growth + Suporte Prioritário (WhatsApp), Auditoria de Alterações, Multi-unidades.
+- **Funcionalidades**: Tudo do Growth + Multi-unidades.
 - **Preço Sugerido**: R$ 230,00 - R$ 300 / mês.
 
 ---
