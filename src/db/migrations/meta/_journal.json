@@ -15,6 +15,13 @@
       "when": 1776207199825,
       "tag": "0001_nostalgic_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776816818283,
+      "tag": "0002_lame_adam_warlock",
+      "breakpoints": true
     }
   ]
 }

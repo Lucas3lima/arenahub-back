@@ -204,18 +204,23 @@ export const companyUsers = pgTable(
 )
 
 // 4. UNIDADES/ARENAS FÍSICAS (Permite o plano Pro ter até 3 unidades)
-export const facilities = pgTable('facilities', {
-  id: uuid().primaryKey().defaultRandom(),
-  companyId: uuid()
-    .references(() => companies.id, { onDelete: 'cascade' })
-    .notNull(),
-  name: text().notNull(), // Ex: "Unidade Centro", "Unidade Praia"
-  address: text(),
-  phone: text(),
+export const facilities = pgTable(
+  'facilities',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    companyId: uuid()
+      .references(() => companies.id, { onDelete: 'cascade' })
+      .notNull(),
+    name: text().notNull(), // Ex: "Unidade Centro", "Unidade Praia"
+    slug: text().notNull(),
+    address: text(),
+    phone: text(),
 
-  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-})
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex('facility_company_slug_idx').on(table.companyId, table.slug)],
+)
 
 // 5. QUADRAS (O produto final que será alugado)
 export const courts = pgTable('courts', {

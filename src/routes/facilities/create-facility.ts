@@ -2,6 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import z from 'zod'
 import { ActiveSubscriptionRequiredError } from '../../_errors/active-subscription-required-error'
 import { CompanyNotFoundError } from '../../_errors/company-not-found-error'
+import { FacilityAlreadyExistsError } from '../../_errors/facility-already-exists-error'
 import { MaxFacilitiesReachedError } from '../../_errors/max-facilities-reached-error'
 import { PlanNotFoundError } from '../../_errors/plan-not-found-error'
 import { UnauthorizedCompanyAccessError } from '../../_errors/unauthorized-company-access-error'
@@ -63,6 +64,7 @@ export const createFacilityRoute: FastifyPluginAsyncZod = async (app) => {
           facilityId: facility.id,
           companyId: facility.companyId,
           name: facility.name,
+          slug: facility.slug,
           address: facility.address,
           phone: facility.phone,
         })
@@ -83,6 +85,10 @@ export const createFacilityRoute: FastifyPluginAsyncZod = async (app) => {
 
         if (err instanceof MaxFacilitiesReachedError) {
           return reply.status(400).send({ message: err.message })
+        }
+
+        if (err instanceof FacilityAlreadyExistsError) {
+          return reply.status(409).send({ message: err.message })
         }
 
         throw err

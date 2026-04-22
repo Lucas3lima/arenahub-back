@@ -1,9 +1,11 @@
+import { FacilityAlreadyExistsError } from '../_errors/facility-already-exists-error'
 import { MaxFacilitiesReachedError } from '../_errors/max-facilities-reached-error'
 import type { CompaniesRepository } from '../repositories/companies-repository'
 import type { CompanyUsersRepository } from '../repositories/company-users-repository'
 import type { FacilitiesRepository } from '../repositories/facilities-repository'
 import type { PlansRepository } from '../repositories/plans-repository'
 import type { SubscriptionsRepository } from '../repositories/subscriptions-repository'
+import { createSlug } from '../utils/create-slug'
 import { ensureCompanyContext } from './_guards/ensure-company-context'
 
 interface CreateFacilityUseCaseRequest {
@@ -53,6 +55,15 @@ export class CreateFacility {
       plansRepository: this.plansRepository,
     })
 
+    const slug = createSlug(name)
+
+    const facilityWithSameSlug =
+      await this.facilitiesRepository.findBySlugAndCompanyId(slug, company.id)
+
+    if (facilityWithSameSlug) {
+      throw new FacilityAlreadyExistsError()
+    }
+
     const facilitiesCount = await this.facilitiesRepository.countByCompanyId(
       company.id,
     )
@@ -64,6 +75,7 @@ export class CreateFacility {
     const facility = await this.facilitiesRepository.create({
       companyId: company.id,
       name,
+      slug,
       address: address ?? null,
       phone: phone ?? null,
     })
