@@ -17,20 +17,43 @@ import { checkRequestJWT } from '../_hooks/check-request-jwt'
 
 export const createSubscriptionRoute: FastifyPluginAsyncZod = async (app) => {
   app.post(
-    '/subscriptions',
+    '/:companySlug/subscriptions',
     {
       preHandler: [checkRequestJWT],
       schema: {
         tags: ['subscriptions'],
         summary: 'Create company subscription',
         body: z.object({
-          companySlug: z.string().min(1),
           planSlug: z.string().min(1),
         }),
+        params: z.object({
+          companySlug: z.string().min(1),
+        }),
+        response: {
+          201: z.object({
+            subscriptionId: z.string(),
+            status: z.string(),
+            planId: z.string(),
+            currentPeriodEndsAt: z.date(),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+          403: z.object({
+            message: z.string(),
+          }),
+          409: z.object({
+            message: z.string(),
+          }),
+          400: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     async (request, reply) => {
-      const { companySlug, planSlug } = request.body
+      const { planSlug } = request.body
+      const { companySlug } = request.params
       const user = getAuthenticatedUser(request)
 
       try {

@@ -17,6 +17,7 @@ import fastifyCookie from '@fastify/cookie'
 import { authenticateWithPasswordRoute } from './routes/auth/authenticate-with-password'
 import { createCompaniesRoute } from './routes/companies/create-companies'
 import { createSubscriptionRoute } from './routes/subscriptions/create-subscription'
+import { createFacilityRoute } from './routes/facilities/create-facility'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -61,6 +62,9 @@ app.register(createCompaniesRoute)
 
 //Subscriptions
 app.register(createSubscriptionRoute)
+
+//Facilities
+app.register(createFacilityRoute)
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }, () => {
   console.log('HTTP server running on http://localhost:3333 !')
