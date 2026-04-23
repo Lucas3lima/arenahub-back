@@ -2,12 +2,18 @@ import { ActiveSubscriptionRequiredError } from '../../_errors/active-subscripti
 import { CompanyNotFoundError } from '../../_errors/company-not-found-error'
 import { PlanNotFoundError } from '../../_errors/plan-not-found-error'
 import { UnauthorizedCompanyAccessError } from '../../_errors/unauthorized-company-access-error'
-import type { CompaniesRepository, Companies } from '../../repositories/companies-repository'
+import type {
+  CompaniesRepository,
+  Companies,
+} from '../../repositories/companies-repository'
 import type {
   CompanyUsersRepository,
   CompanyUsers,
 } from '../../repositories/company-users-repository'
-import type { PlansRepository, Plans } from '../../repositories/plans-repository'
+import type {
+  PlansRepository,
+  Plans,
+} from '../../repositories/plans-repository'
 import type {
   SubscriptionsRepository,
   Subscription,
@@ -56,17 +62,21 @@ export async function ensureCompanyContext(
   params: EnsureCompanyContextDeps & EnsureCompanyContextWithActiveSubscription,
 ): Promise<EnsureCompanyContextWithSubscriptionResult>
 export async function ensureCompanyContext(
-  params: EnsureCompanyContextDeps & EnsureCompanyContextWithoutActiveSubscription,
+  params: EnsureCompanyContextDeps &
+    EnsureCompanyContextWithoutActiveSubscription,
 ): Promise<EnsureCompanyContextWithoutSubscriptionResult>
 export async function ensureCompanyContext(
   params:
     | (EnsureCompanyContextDeps & EnsureCompanyContextWithActiveSubscription)
-    | (EnsureCompanyContextDeps & EnsureCompanyContextWithoutActiveSubscription),
+    | (EnsureCompanyContextDeps &
+        EnsureCompanyContextWithoutActiveSubscription),
 ): Promise<
   | EnsureCompanyContextWithSubscriptionResult
   | EnsureCompanyContextWithoutSubscriptionResult
 > {
-  const company = await params.companiesRepository.findBySlug(params.companySlug)
+  const company = await params.companiesRepository.findBySlug(
+    params.companySlug,
+  )
 
   if (!company) {
     throw new CompanyNotFoundError()
