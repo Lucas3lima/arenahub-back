@@ -8,7 +8,7 @@ interface CreateAccountUseCaseRequest {
   password: string
 }
 
-export class CreateAccount {
+export class CreateAccountUseCase {
   private usersRepository: UsersRepository
   constructor(usersRepository: UsersRepository) {
     this.usersRepository = usersRepository
