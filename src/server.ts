@@ -18,6 +18,10 @@ import { authenticateWithPasswordRoute } from './routes/auth/authenticate-with-p
 import { createCompaniesRoute } from './routes/companies/create-companies'
 import { createSubscriptionRoute } from './routes/subscriptions/create-subscription'
 import { createFacilityRoute } from './routes/facilities/create-facility'
+import { createCourtRoute } from './routes/courts/create-court'
+import { updateCourtRoute } from './routes/courts/update-court'
+import { listFacilityCourtsRoute } from './routes/courts/list-facility-courts'
+import { getCourtDetailsRoute } from './routes/courts/get-court-details'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -65,6 +69,12 @@ app.register(createSubscriptionRoute)
 
 //Facilities
 app.register(createFacilityRoute)
+
+//Courts
+app.register(createCourtRoute)
+app.register(updateCourtRoute)
+app.register(listFacilityCourtsRoute)
+app.register(getCourtDetailsRoute)
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }, () => {
   console.log('HTTP server running on http://localhost:3333 !')

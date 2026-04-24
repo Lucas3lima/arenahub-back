@@ -34,4 +34,12 @@ export class InMemoryFacilitiesRepository implements FacilitiesRepository {
 
     return facility ?? null
   }
+
+  async findByIdAndCompanyId(id: string, companyId: string) {
+    const facility = this.items.find(
+      (item) => item.id === id && item.companyId === companyId,
+    )
+
+    return facility ?? null
+  }
 }

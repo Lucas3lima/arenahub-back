@@ -18,7 +18,14 @@ export const sportTypeEnum = pgEnum('sport_type', [
   'volei',
   'tenis',
   'beach_tennis',
+  'padel',
+  'areia',
   'outro',
+])
+export const courtStatusEnum = pgEnum('court_status', [
+  'open',
+  'closed',
+  'maintenance',
 ])
 export const bookingStatusEnum = pgEnum('booking_status', [
   'pending_payment',
@@ -219,7 +226,9 @@ export const facilities = pgTable(
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [uniqueIndex('facility_company_slug_idx').on(table.companyId, table.slug)],
+  (table) => [
+    uniqueIndex('facility_company_slug_idx').on(table.companyId, table.slug),
+  ],
 )
 
 // 5. QUADRAS (O produto final que será alugado)
@@ -228,13 +237,63 @@ export const courts = pgTable('courts', {
   facilityId: uuid()
     .references(() => facilities.id, { onDelete: 'cascade' })
     .notNull(),
-  name: text().notNull(), // Ex: "Quadra 1 - Areia", "Campo Society A"
+  name: text().notNull(),
+  description: text(),
   sportType: sportTypeEnum('sport_type').notNull(),
+  status: courtStatusEnum('status').default('open').notNull(),
+  basePriceCents: integer().notNull(),
+  rentalDurationMinutes: integer().notNull(),
+  bufferMinutes: integer().default(0).notNull(),
   isActive: boolean().default(true).notNull(),
 
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
+
+export const courtOpeningHours = pgTable(
+  'court_opening_hours',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    courtId: uuid()
+      .references(() => courts.id, { onDelete: 'cascade' })
+      .notNull(),
+    weekday: integer().notNull(),
+    startMinute: integer().notNull(),
+    endMinute: integer().notNull(),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('court_opening_hours_unique_range_idx').on(
+      table.courtId,
+      table.weekday,
+      table.startMinute,
+      table.endMinute,
+    ),
+  ],
+)
+
+export const courtWeekdayPrices = pgTable(
+  'court_weekday_prices',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    courtId: uuid()
+      .references(() => courts.id, { onDelete: 'cascade' })
+      .notNull(),
+    weekday: integer().notNull(),
+    priceCents: integer().notNull(),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('court_weekday_prices_court_weekday_idx').on(
+      table.courtId,
+      table.weekday,
+    ),
+  ],
+)
 
 // 6. RESERVAS AVULSAS
 export const bookings = pgTable('bookings', {
@@ -343,12 +402,34 @@ export const facilitiesRelations = relations(facilities, ({ one, many }) => ({
   courts: many(courts),
 }))
 
-export const courtsRelations = relations(courts, ({ one }) => ({
+export const courtsRelations = relations(courts, ({ one, many }) => ({
   facility: one(facilities, {
     fields: [courts.facilityId],
     references: [facilities.id],
   }),
+  openingHours: many(courtOpeningHours),
+  weekdayPrices: many(courtWeekdayPrices),
 }))
+
+export const courtOpeningHoursRelations = relations(
+  courtOpeningHours,
+  ({ one }) => ({
+    court: one(courts, {
+      fields: [courtOpeningHours.courtId],
+      references: [courts.id],
+    }),
+  }),
+)
+
+export const courtWeekdayPricesRelations = relations(
+  courtWeekdayPrices,
+  ({ one }) => ({
+    court: one(courts, {
+      fields: [courtWeekdayPrices.courtId],
+      references: [courts.id],
+    }),
+  }),
+)
 
 export const bookingsRelations = relations(bookings, ({ one }) => ({
   company: one(companies, {

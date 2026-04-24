@@ -8,4 +8,5 @@ export interface FacilitiesRepository {
   create(data: CreateFacilityInput): Promise<Facility>
   countByCompanyId(companyId: string): Promise<number>
   findBySlugAndCompanyId(slug: string, companyId: string): Promise<Facility | null>
+  findByIdAndCompanyId(id: string, companyId: string): Promise<Facility | null>
 }

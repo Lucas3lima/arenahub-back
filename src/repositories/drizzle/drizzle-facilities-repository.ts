@@ -26,6 +26,20 @@ export class DrizzleFacilitiesRepository implements FacilitiesRepository {
     return facility
   }
 
+  async findByIdAndCompanyId(id: string, companyId: string) {
+    const [facility] = await db
+      .select()
+      .from(facilities)
+      .where(and(eq(facilities.id, id), eq(facilities.companyId, companyId)))
+      .limit(1)
+
+    if (!facility) {
+      return null
+    }
+
+    return facility
+  }
+
   async countByCompanyId(companyId: string) {
     const [result] = await db
       .select({
