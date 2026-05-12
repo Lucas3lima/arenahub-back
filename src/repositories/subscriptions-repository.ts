@@ -36,6 +36,12 @@ export interface SubscriptionsRepository {
   findActiveByCompanyId(companyId: string): Promise<Subscription | null>
 
   /**
+   * Retorna a assinatura mais recente que colidiria com o índice único de assinatura ativa.
+   * Uso: fluxo de criação de assinatura para tratar registros expirados com status ainda ativo.
+   */
+  findConflictingByCompanyId(companyId: string): Promise<Subscription | null>
+
+  /**
    * Lista o histórico de assinaturas da empresa, da mais recente para a mais antiga.
    * Uso: tela de histórico de cobrança e auditoria.
    */

@@ -63,6 +63,30 @@ export class DrizzleSubscriptionsRepository implements SubscriptionsRepository {
   }
 
   /**
+   * Retorna a assinatura mais recente que pode colidir com o índice único de assinatura ativa.
+   * Uso: criação de nova assinatura após período encerrado com status legado.
+   */
+  async findConflictingByCompanyId(companyId: string) {
+    const [subscription] = await db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.companyId, companyId),
+          inArray(subscriptions.status, ACTIVE_SUBSCRIPTION_STATUSES),
+        ),
+      )
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1)
+
+    if (!subscription) {
+      return null
+    }
+
+    return subscription
+  }
+
+  /**
    * Lista o histórico de assinaturas da empresa, da mais recente para a mais antiga.
    * Uso: tela de histórico de cobrança e auditoria.
    */

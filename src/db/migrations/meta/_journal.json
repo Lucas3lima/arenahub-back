@@ -29,6 +29,13 @@
       "when": 1776984559608,
       "tag": "0003_silent_tusk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778027045158,
+      "tag": "0004_windy_black_tarantula",
+      "breakpoints": true
     }
   ]
 }

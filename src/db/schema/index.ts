@@ -31,6 +31,25 @@ export const bookingStatusEnum = pgEnum('booking_status', [
   'pending_payment',
   'confirmed',
   'cancelled',
+  'expired',
+])
+export const bookingSourceEnum = pgEnum('booking_source', ['public', 'staff'])
+export const bookingPricingRuleEnum = pgEnum('booking_pricing_rule', [
+  'base',
+  'weekday',
+  'override',
+])
+export const paymentStatusEnum = pgEnum('payment_status', [
+  'unpaid',
+  'paid',
+  'partial',
+  'refunded',
+])
+export const paymentMethodEnum = pgEnum('payment_method', [
+  'cash',
+  'card',
+  'pix',
+  'online',
 ])
 export const membershipStatusEnum = pgEnum('membership_status', [
   'active',
@@ -296,23 +315,57 @@ export const courtWeekdayPrices = pgTable(
 )
 
 // 6. RESERVAS AVULSAS
-export const bookings = pgTable('bookings', {
-  id: uuid().primaryKey().defaultRandom(),
-  companyId: uuid()
-    .references(() => companies.id, { onDelete: 'cascade' })
-    .notNull(),
-  courtId: uuid()
-    .references(() => courts.id, { onDelete: 'cascade' })
-    .notNull(),
-  customerName: text().notNull(),
-  customerPhone: text(),
-  startsAt: timestamp({ withTimezone: true }).notNull(),
-  endsAt: timestamp({ withTimezone: true }).notNull(),
-  status: bookingStatusEnum('status').default('pending_payment').notNull(),
+export const bookings = pgTable(
+  'bookings',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    companyId: uuid()
+      .references(() => companies.id, { onDelete: 'cascade' })
+      .notNull(),
+    courtId: uuid()
+      .references(() => courts.id, { onDelete: 'cascade' })
+      .notNull(),
+    customerName: text().notNull(),
+    customerPhone: text(),
+    customerEmail: text(),
+    customerDocument: text(),
+    startsAt: timestamp({ withTimezone: true }).notNull(),
+    endsAt: timestamp({ withTimezone: true }).notNull(),
+    status: bookingStatusEnum('status').default('pending_payment').notNull(),
+    source: bookingSourceEnum('source').default('public').notNull(),
+    createdByUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    notes: text(),
 
-  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-})
+    totalPriceCents: integer().notNull(),
+    pricingRule: bookingPricingRuleEnum('pricing_rule').default('base').notNull(),
+    paymentStatus: paymentStatusEnum('payment_status').default('unpaid').notNull(),
+    paymentMethod: paymentMethodEnum('payment_method'),
+    paidAt: timestamp({ withTimezone: true }),
+    externalPaymentId: text(),
+    paymentExpiresAt: timestamp({ withTimezone: true }),
+
+    cancelledAt: timestamp({ withTimezone: true }),
+    cancelledByUserId: uuid().references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    cancellationReason: text(),
+
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('bookings_company_court_starts_at_idx').on(
+      table.companyId,
+      table.courtId,
+      table.startsAt,
+    ),
+    uniqueIndex('bookings_company_id_starts_at_idx').on(
+      table.companyId,
+      table.startsAt,
+      table.id,
+    ),
+  ],
+)
 
 // 7. MENSALISTAS (SLOTS RECORRENTES)
 export const memberships = pgTable('memberships', {
@@ -439,6 +492,14 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   court: one(courts, {
     fields: [bookings.courtId],
     references: [courts.id],
+  }),
+  createdByUser: one(users, {
+    fields: [bookings.createdByUserId],
+    references: [users.id],
+  }),
+  cancelledByUser: one(users, {
+    fields: [bookings.cancelledByUserId],
+    references: [users.id],
   }),
 }))
 

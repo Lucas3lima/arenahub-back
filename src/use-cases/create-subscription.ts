@@ -39,6 +39,7 @@ export class CreateSubscription {
     userId,
     planSlug,
   }: CreateSubscriptionUseCaseRequest) {
+    const now = new Date()
     const company = await this.companiesRepository.findBySlug(companySlug)
 
     if (!company) {
@@ -65,14 +66,22 @@ export class CreateSubscription {
       throw new PlanInactiveError()
     }
 
-    const activeSubscription =
-      await this.subscriptionsRepository.findActiveByCompanyId(company.id)
+    const conflictingSubscription =
+      await this.subscriptionsRepository.findConflictingByCompanyId(company.id)
 
-    if (activeSubscription) {
-      throw new CompanyAlreadyHasActiveSubscriptionError()
+    if (conflictingSubscription) {
+      const isConflictingSubscriptionExpired =
+        conflictingSubscription.currentPeriodEndsAt < now
+
+      if (!isConflictingSubscriptionExpired) {
+        throw new CompanyAlreadyHasActiveSubscriptionError()
+      }
+
+      await this.subscriptionsRepository.updateById(conflictingSubscription.id, {
+        status: 'expired',
+        endedAt: now,
+      })
     }
-
-    const now = new Date()
     let status: 'trialing' | 'active' = 'active'
     let trialEndsAt: Date | null = null
     let currentPeriodEndsAt = addDays(now, 30)

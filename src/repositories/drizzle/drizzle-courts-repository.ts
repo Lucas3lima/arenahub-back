@@ -79,7 +79,9 @@ export class DrizzleCourtsRepository implements CourtsRepository {
         return null
       }
 
-      await tx.delete(courtOpeningHours).where(eq(courtOpeningHours.courtId, courtId))
+      await tx
+        .delete(courtOpeningHours)
+        .where(eq(courtOpeningHours.courtId, courtId))
       await tx
         .delete(courtWeekdayPrices)
         .where(eq(courtWeekdayPrices.courtId, courtId))
@@ -122,7 +124,11 @@ export class DrizzleCourtsRepository implements CourtsRepository {
   }
 
   async findById(courtId: string) {
-    const [court] = await db.select().from(courts).where(eq(courts.id, courtId)).limit(1)
+    const [court] = await db
+      .select()
+      .from(courts)
+      .where(eq(courts.id, courtId))
+      .limit(1)
 
     if (!court) {
       return null
@@ -132,7 +138,10 @@ export class DrizzleCourtsRepository implements CourtsRepository {
       .select()
       .from(courtOpeningHours)
       .where(eq(courtOpeningHours.courtId, courtId))
-      .orderBy(asc(courtOpeningHours.weekday), asc(courtOpeningHours.startMinute))
+      .orderBy(
+        asc(courtOpeningHours.weekday),
+        asc(courtOpeningHours.startMinute),
+      )
 
     const weekdayPrices = await db
       .select()

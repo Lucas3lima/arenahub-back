@@ -69,6 +69,20 @@ export class InMemorySubscriptionsRepository
     return subscriptions.at(0) ?? null
   }
 
+  async findConflictingByCompanyId(companyId: string) {
+    const subscriptions = this.items
+      .filter(
+        (item) =>
+          item.companyId === companyId &&
+          ACTIVE_SUBSCRIPTION_STATUSES.includes(
+            item.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
+          ),
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
+    return subscriptions.at(0) ?? null
+  }
+
   async listByCompanyId(companyId: string) {
     return this.items
       .filter((item) => item.companyId === companyId)

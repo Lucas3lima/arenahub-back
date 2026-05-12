@@ -159,6 +159,49 @@ describe('Create Subscription', () => {
     ).rejects.toBeInstanceOf(CompanyAlreadyHasActiveSubscriptionError)
   })
 
+  it('should expire stale active subscription before creating a new one', async () => {
+    const { company, ownerUserId } = await makeCompanyContext({
+      companiesRepository: inMemoryCompaniesRepository,
+      companyUsersRepository: inMemoryCompanyUsersRepository,
+    })
+    const trialPlan = seedPlan(inMemoryPlansRepository, {
+      slug: 'free_trial',
+      isActive: true,
+      trialDays: 14,
+    })
+    const paidPlan = seedPlan(inMemoryPlansRepository, {
+      slug: 'pro',
+      isActive: true,
+      trialDays: 0,
+    })
+
+    const staleTrialSubscription = await inMemorySubscriptionsRepository.create(
+      {
+        companyId: company.id,
+        planId: trialPlan.id,
+        status: 'trialing',
+        currentPeriodStartsAt: new Date('2026-01-01T00:00:00.000Z'),
+        currentPeriodEndsAt: new Date('2026-01-15T00:00:00.000Z'),
+        trialEndsAt: new Date('2026-01-15T00:00:00.000Z'),
+      },
+    )
+
+    const { subscription } = await sut.execute({
+      companySlug: company.slug,
+      userId: ownerUserId,
+      planSlug: paidPlan.slug,
+    })
+
+    expect(subscription.id).not.toBe(staleTrialSubscription.id)
+    expect(subscription.status).toBe('active')
+
+    const updatedStaleSubscription =
+      await inMemorySubscriptionsRepository.findById(staleTrialSubscription.id)
+
+    expect(updatedStaleSubscription?.status).toBe('expired')
+    expect(updatedStaleSubscription?.endedAt).toBeTruthy()
+  })
+
   it('should not be able to use free trial more than once as owner', async () => {
     const ownerUserId = crypto.randomUUID()
     const trialPlan = seedPlan(inMemoryPlansRepository, {
