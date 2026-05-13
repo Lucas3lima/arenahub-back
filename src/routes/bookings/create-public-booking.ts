@@ -31,10 +31,10 @@ export const createPublicBookingRoute: FastifyPluginAsyncZod = async (app) => {
         }),
         body: z.object({
           facilitySlug: z.string().min(1),
-          courtId: z.string().min(1),
+          courtId: z.uuid(),
           customerName: z.string().min(1),
-          customerPhone: z.string().min(6).optional(),
-          customerEmail: z.string().email().optional(),
+          customerPhone: z.string().min(6),
+          customerEmail: z.email().optional(),
           customerDocument: z.string().optional(),
           startsAt: z.string().datetime(),
           notes: z.string().max(500).optional(),

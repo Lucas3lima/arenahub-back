@@ -333,12 +333,18 @@ export const bookings = pgTable(
     endsAt: timestamp({ withTimezone: true }).notNull(),
     status: bookingStatusEnum('status').default('pending_payment').notNull(),
     source: bookingSourceEnum('source').default('public').notNull(),
-    createdByUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    createdByUserId: uuid().references(() => users.id, {
+      onDelete: 'set null',
+    }),
     notes: text(),
 
     totalPriceCents: integer().notNull(),
-    pricingRule: bookingPricingRuleEnum('pricing_rule').default('base').notNull(),
-    paymentStatus: paymentStatusEnum('payment_status').default('unpaid').notNull(),
+    pricingRule: bookingPricingRuleEnum('pricing_rule')
+      .default('base')
+      .notNull(),
+    paymentStatus: paymentStatusEnum('payment_status')
+      .default('unpaid')
+      .notNull(),
     paymentMethod: paymentMethodEnum('payment_method'),
     paidAt: timestamp({ withTimezone: true }),
     externalPaymentId: text(),
@@ -354,11 +360,9 @@ export const bookings = pgTable(
     updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex('bookings_company_court_starts_at_idx').on(
-      table.companyId,
-      table.courtId,
-      table.startsAt,
-    ),
+    uniqueIndex('bookings_company_court_starts_at_idx')
+      .on(table.companyId, table.courtId, table.startsAt)
+      .where(sql`${table.status} NOT IN ('cancelled', 'expired')`),
     uniqueIndex('bookings_company_id_starts_at_idx').on(
       table.companyId,
       table.startsAt,

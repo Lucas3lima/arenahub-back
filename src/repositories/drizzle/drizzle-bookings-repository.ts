@@ -206,7 +206,7 @@ export class DrizzleBookingsRepository implements BookingsRepository {
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtext(${params.booking.courtId}))`,
       )
-
+      // Expire pending payments
       await tx
         .update(bookings)
         .set({
@@ -222,6 +222,7 @@ export class DrizzleBookingsRepository implements BookingsRepository {
           ),
         )
 
+      // Check for booking conflicts
       const [bookingConflict] = await tx
         .select({ id: bookings.id })
         .from(bookings)
@@ -245,6 +246,7 @@ export class DrizzleBookingsRepository implements BookingsRepository {
       if (bookingConflict) {
         return null
       }
+      // Check for membership conflicts
       const [[membershipConflict], [classConflict]] = await Promise.all([
         tx
           .select({ id: memberships.id })
@@ -273,12 +275,10 @@ export class DrizzleBookingsRepository implements BookingsRepository {
           )
           .limit(1),
       ])
-      console.log(membershipConflict)
-      console.log(classConflict)
       if (membershipConflict || classConflict) {
         return null
       }
-      console.log('passou aqui 2')
+
       const [createdBooking] = await tx
         .insert(bookings)
         .values(params.booking)

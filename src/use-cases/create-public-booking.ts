@@ -21,7 +21,7 @@ interface CreatePublicBookingUseCaseRequest {
   facilitySlug: string
   courtId: string
   customerName: string
-  customerPhone?: string
+  customerPhone: string
   customerEmail?: string
   customerDocument?: string
   startsAt: Date
@@ -72,7 +72,10 @@ export class CreatePublicBooking {
 
     const courtWithSettings = await this.courtsRepository.findById(courtId)
 
-    if (!courtWithSettings || courtWithSettings.court.facilityId !== facility.id) {
+    if (
+      !courtWithSettings ||
+      courtWithSettings.court.facilityId !== facility.id
+    ) {
       throw new CourtNotFoundError()
     }
 
@@ -112,7 +115,7 @@ export class CreatePublicBooking {
         companyId: company.id,
         courtId,
         customerName,
-        customerPhone: customerPhone ?? null,
+        customerPhone: customerPhone,
         customerEmail: customerEmail ?? null,
         customerDocument: customerDocument ?? null,
         startsAt,
