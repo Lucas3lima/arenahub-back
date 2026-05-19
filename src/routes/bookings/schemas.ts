@@ -35,6 +35,8 @@ export const bookingResponseSchema = z.object({
   paidAt: z.date().nullable(),
   paymentExpiresAt: z.date().nullable(),
   externalPaymentId: z.string().nullable(),
+  depositPercent: z.int().min(0).max(100),
+  depositAmountCents: z.int().min(0),
   cancelledAt: z.date().nullable(),
   cancelledByUserId: z.string().nullable(),
   cancellationReason: z.string().nullable(),

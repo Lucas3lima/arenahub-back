@@ -24,6 +24,8 @@ export function toBookingResponse(data: BookingWithContext) {
     paidAt: data.booking.paidAt,
     paymentExpiresAt: data.booking.paymentExpiresAt,
     externalPaymentId: data.booking.externalPaymentId,
+    depositPercent: data.booking.depositPercent,
+    depositAmountCents: data.booking.depositAmountCents,
     cancelledAt: data.booking.cancelledAt,
     cancelledByUserId: data.booking.cancelledByUserId,
     cancellationReason: data.booking.cancellationReason,

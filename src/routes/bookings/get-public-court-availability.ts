@@ -36,6 +36,8 @@ export const getPublicCourtAvailabilityRoute: FastifyPluginAsyncZod = async (
           200: z.object({
             courtId: z.string(),
             paymentMode: z.enum(['counter_only', 'online_or_counter']),
+            requiresOnlineDeposit: z.boolean(),
+            depositPercent: z.int().min(0).max(100),
             slots: z.array(availabilitySlotSchema),
           }),
           403: z.object({ message: z.string() }),
@@ -57,7 +59,13 @@ export const getPublicCourtAvailabilityRoute: FastifyPluginAsyncZod = async (
           new DrizzleBookingsRepository(),
         )
 
-        const { court, slots, paymentMode } = await useCase.execute({
+        const {
+          court,
+          slots,
+          paymentMode,
+          requiresOnlineDeposit,
+          depositPercent,
+        } = await useCase.execute({
           companySlug,
           facilitySlug,
           courtId,
@@ -67,6 +75,8 @@ export const getPublicCourtAvailabilityRoute: FastifyPluginAsyncZod = async (
         return reply.status(200).send({
           courtId: court.id,
           paymentMode,
+          requiresOnlineDeposit,
+          depositPercent,
           slots,
         })
       } catch (err) {

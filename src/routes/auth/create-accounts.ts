@@ -2,7 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import z from 'zod'
 import { UserAlreadyExistsError } from '../../_errors/user-already-exists-error'
 import { DrizzleUsersRepository } from '../../repositories/drizzle/drizzle-users-repository'
-import { CreateAccount } from '../../use-cases/create-account'
+import { CreateAccountUseCase } from '../../use-cases/create-account'
 
 export const createAccountRoute: FastifyPluginAsyncZod = async (app) => {
   app.post(
@@ -31,7 +31,7 @@ export const createAccountRoute: FastifyPluginAsyncZod = async (app) => {
 
       try {
         const usersRepository = new DrizzleUsersRepository()
-        const createAccount = new CreateAccount(usersRepository)
+        const createAccount = new CreateAccountUseCase(usersRepository)
 
         const { user } = await createAccount.execute({ name, email, password })
 

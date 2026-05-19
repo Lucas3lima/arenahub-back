@@ -4,6 +4,7 @@ import { companies } from '../../db/schema'
 import type {
   CompaniesRepository,
   CreateCompaniesInput,
+  UpdateCompanySettingsInput,
 } from '../companies-repository'
 
 export class DrizzleCompaniesRepository implements CompaniesRepository {
@@ -32,6 +33,20 @@ export class DrizzleCompaniesRepository implements CompaniesRepository {
       .from(companies)
       .where(eq(companies.slug, slug))
       .limit(1)
+
+    if (!company) {
+      return null
+    }
+
+    return company
+  }
+
+  async updateSettingsById(id: string, data: UpdateCompanySettingsInput) {
+    const [company] = await db
+      .update(companies)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(companies.id, id))
+      .returning()
 
     if (!company) {
       return null

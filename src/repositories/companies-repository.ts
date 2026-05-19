@@ -3,9 +3,22 @@ import type { companies } from '../db/schema'
 
 export type Companies = InferSelectModel<typeof companies>
 export type CreateCompaniesInput = InferInsertModel<typeof companies>
+export type UpdateCompanySettingsInput = Partial<
+  Pick<
+    CreateCompaniesInput,
+    | 'onlineReservationsEnabled'
+    | 'onlinePaymentEnabled'
+    | 'onlineBookingRequiresDeposit'
+    | 'onlineBookingDepositPercent'
+  >
+>
 
 export interface CompaniesRepository {
   create(data: CreateCompaniesInput): Promise<Companies>
   findBySlug(slug: string): Promise<Companies | null>
   findById(id: string): Promise<Companies | null>
+  updateSettingsById(
+    id: string,
+    data: UpdateCompanySettingsInput,
+  ): Promise<Companies | null>
 }

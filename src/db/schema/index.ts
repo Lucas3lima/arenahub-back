@@ -177,6 +177,12 @@ export const companies = pgTable('companies', {
 
   isActive: boolean().default(true).notNull(),
 
+  // Configurações da company sobre o que está realmente ativo (sujeito ao plano permitir).
+  onlineReservationsEnabled: boolean().default(true).notNull(),
+  onlinePaymentEnabled: boolean().default(false).notNull(),
+  onlineBookingRequiresDeposit: boolean().default(false).notNull(),
+  onlineBookingDepositPercent: integer().default(0).notNull(),
+
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
@@ -331,7 +337,7 @@ export const bookings = pgTable(
     customerDocument: text(),
     startsAt: timestamp({ withTimezone: true }).notNull(),
     endsAt: timestamp({ withTimezone: true }).notNull(),
-    status: bookingStatusEnum('status').default('pending_payment').notNull(),
+    status: bookingStatusEnum('status').default('confirmed').notNull(),
     source: bookingSourceEnum('source').default('public').notNull(),
     createdByUserId: uuid().references(() => users.id, {
       onDelete: 'set null',
@@ -349,6 +355,10 @@ export const bookings = pgTable(
     paidAt: timestamp({ withTimezone: true }),
     externalPaymentId: text(),
     paymentExpiresAt: timestamp({ withTimezone: true }),
+
+    // Snapshot da entrada exigida no momento da reserva (se houver).
+    depositPercent: integer().default(0).notNull(),
+    depositAmountCents: integer().default(0).notNull(),
 
     cancelledAt: timestamp({ withTimezone: true }),
     cancelledByUserId: uuid().references(() => users.id, {

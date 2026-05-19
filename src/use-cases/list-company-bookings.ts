@@ -12,6 +12,8 @@ interface ListCompanyBookingsUseCaseRequest {
   endsAt: Date
   courtId?: string
   status?: 'pending_payment' | 'confirmed' | 'cancelled' | 'expired'
+  paymentStatus?: 'unpaid' | 'paid' | 'partial' | 'refunded'
+  paymentDue?: 'outstanding'
 }
 
 export class ListCompanyBookings {
@@ -30,6 +32,8 @@ export class ListCompanyBookings {
     endsAt,
     courtId,
     status,
+    paymentStatus,
+    paymentDue,
   }: ListCompanyBookingsUseCaseRequest) {
     const now = new Date()
     const { company } = await ensureCompanyContext({
@@ -43,7 +47,7 @@ export class ListCompanyBookings {
       plansRepository: this.plansRepository,
     })
 
-    await this.bookingsRepository.expirePendingPayments({
+    await this.bookingsRepository.expirePendingPaymentHolds({
       companyId: company.id,
       now,
     })
@@ -54,6 +58,9 @@ export class ListCompanyBookings {
       endsAt,
       courtId,
       status,
+      paymentStatus,
+      paymentDue,
+      now,
     })
 
     return { bookings }

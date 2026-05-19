@@ -14,6 +14,7 @@ import {
   getUtcDayBounds,
   overlaps,
 } from '../utils/booking-schedule'
+import { resolveCompanyFeatureSettings } from '../utils/company-feature-settings'
 import { ensurePublicCompanyContext } from './_guards/ensure-public-company-context'
 
 interface GetPublicCourtAvailabilityUseCaseRequest {
@@ -48,7 +49,9 @@ export class GetPublicCourtAvailability {
       plansRepository: this.plansRepository,
     })
 
-    if (!plan.hasOnlineReservations) {
+    const features = resolveCompanyFeatureSettings({ company, plan })
+
+    if (!features.canUseOnlineReservations) {
       throw new OnlineReservationsNotAvailableError()
     }
     const facility = await this.facilitiesRepository.findBySlugAndCompanyId(
@@ -76,7 +79,7 @@ export class GetPublicCourtAvailability {
       throw new CourtUnavailableError()
     }
 
-    await this.bookingsRepository.expirePendingPayments({
+    await this.bookingsRepository.expirePendingPaymentHolds({
       companyId: company.id,
       courtId,
       now,
@@ -119,9 +122,11 @@ export class GetPublicCourtAvailability {
           pricingRule: price.pricingRule,
         }
       }),
-      paymentMode: plan.hasOnlinePayment
+      paymentMode: features.canUseOnlinePayment
         ? ('online_or_counter' as const)
         : ('counter_only' as const),
+      requiresOnlineDeposit: features.requiresOnlineDeposit,
+      depositPercent: features.depositPercent,
     }
   }
 }

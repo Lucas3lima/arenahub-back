@@ -4,6 +4,7 @@ import type { BookingsRepository } from '../repositories/bookings-repository'
 import type { CompaniesRepository } from '../repositories/companies-repository'
 import type { PlansRepository } from '../repositories/plans-repository'
 import type { SubscriptionsRepository } from '../repositories/subscriptions-repository'
+import { resolveCompanyFeatureSettings } from '../utils/company-feature-settings'
 import { ensurePublicCompanyContext } from './_guards/ensure-public-company-context'
 
 interface GetPublicBookingDetailsUseCaseRequest {
@@ -31,11 +32,13 @@ export class GetPublicBookingDetails {
       plansRepository: this.plansRepository,
     })
 
-    if (!plan.hasOnlineReservations) {
+    const features = resolveCompanyFeatureSettings({ company, plan })
+
+    if (!features.canUseOnlineReservations) {
       throw new OnlineReservationsNotAvailableError()
     }
 
-    await this.bookingsRepository.expirePendingPayments({
+    await this.bookingsRepository.expirePendingPaymentHolds({
       companyId: company.id,
       now,
     })
@@ -51,7 +54,10 @@ export class GetPublicBookingDetails {
 
     return {
       booking,
-      canPayOnline: plan.hasOnlinePayment,
+      canPayOnline: features.canUseOnlinePayment,
+      requiresOnlineDeposit: booking.booking.depositPercent > 0,
+      depositPercent: booking.booking.depositPercent,
+      depositAmountCents: booking.booking.depositAmountCents,
     }
   }
 }

@@ -47,6 +47,8 @@ export class InMemoryBookingsRepository implements BookingsRepository {
       paidAt: data.paidAt ?? null,
       externalPaymentId: data.externalPaymentId ?? null,
       paymentExpiresAt: data.paymentExpiresAt ?? null,
+      depositPercent: data.depositPercent ?? 0,
+      depositAmountCents: data.depositAmountCents ?? 0,
       cancelledAt: data.cancelledAt ?? null,
       cancelledByUserId: data.cancelledByUserId ?? null,
       cancellationReason: data.cancellationReason ?? null,
@@ -101,12 +103,31 @@ export class InMemoryBookingsRepository implements BookingsRepository {
     endsAt: Date
     courtId?: string
     status?: Booking['status']
+    paymentStatus?: Booking['paymentStatus']
+    paymentDue?: 'outstanding'
+    now?: Date
   }) {
     return this.items
       .filter((booking) => {
         if (booking.companyId !== params.companyId) return false
         if (params.courtId && booking.courtId !== params.courtId) return false
         if (params.status && booking.status !== params.status) return false
+        if (
+          params.paymentStatus &&
+          booking.paymentStatus !== params.paymentStatus
+        ) {
+          return false
+        }
+        if (params.paymentDue === 'outstanding') {
+          if (booking.status !== 'confirmed') return false
+          if (
+            booking.paymentStatus !== 'unpaid' &&
+            booking.paymentStatus !== 'partial'
+          ) {
+            return false
+          }
+          if (params.now && booking.endsAt >= params.now) return false
+        }
         return booking.startsAt < params.endsAt && booking.endsAt > params.startsAt
       })
       .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
@@ -130,7 +151,7 @@ export class InMemoryBookingsRepository implements BookingsRepository {
       })
   }
 
-  async expirePendingPayments(params: {
+  async expirePendingPaymentHolds(params: {
     companyId: string
     now: Date
     courtId?: string
@@ -218,7 +239,7 @@ export class InMemoryBookingsRepository implements BookingsRepository {
     booking: CreateBookingInput
     now: Date
   }) {
-    await this.expirePendingPayments({
+    await this.expirePendingPaymentHolds({
       companyId: params.booking.companyId,
       courtId: params.booking.courtId,
       now: params.now,

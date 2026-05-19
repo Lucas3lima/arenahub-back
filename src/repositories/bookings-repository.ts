@@ -47,8 +47,11 @@ export interface BookingsRepository {
     endsAt: Date
     courtId?: string
     status?: Booking['status']
+    paymentStatus?: Booking['paymentStatus']
+    paymentDue?: 'outstanding'
+    now?: Date
   }): Promise<BookingWithContext[]>
-  expirePendingPayments(params: {
+  expirePendingPaymentHolds(params: {
     companyId: string
     now: Date
     courtId?: string

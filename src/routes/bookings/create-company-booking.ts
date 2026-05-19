@@ -37,11 +37,10 @@ export const createCompanyBookingRoute: FastifyPluginAsyncZod = async (app) => {
         body: z.object({
           courtId: z.uuid(),
           customerName: z.string().min(1),
-          customerPhone: z.string().min(6).optional(),
+          customerPhone: z.string().min(6),
           customerEmail: z.email().optional(),
           customerDocument: z.string().optional(),
           startsAt: z.string().datetime(),
-          status: z.enum(['pending_payment', 'confirmed']).optional(),
           notes: z.string().max(500).optional(),
         }),
         response: {
@@ -86,7 +85,6 @@ export const createCompanyBookingRoute: FastifyPluginAsyncZod = async (app) => {
           customerEmail: request.body.customerEmail,
           customerDocument: request.body.customerDocument,
           startsAt: new Date(request.body.startsAt),
-          status: request.body.status,
           notes: request.body.notes,
         })
 

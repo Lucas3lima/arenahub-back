@@ -43,6 +43,9 @@ export const createPublicBookingRoute: FastifyPluginAsyncZod = async (app) => {
           201: z.object({
             booking: bookingResponseSchema,
             paymentMode: z.enum(['counter_only', 'online_or_counter']),
+            requiresOnlineDeposit: z.boolean(),
+            depositPercent: z.int().min(0).max(100),
+            depositAmountCents: z.int().min(0),
           }),
           400: z.object({ message: z.string() }),
           403: z.object({ message: z.string() }),
@@ -70,7 +73,13 @@ export const createPublicBookingRoute: FastifyPluginAsyncZod = async (app) => {
           new DrizzleBookingsRepository(),
         )
 
-        const { booking, paymentMode } = await createUseCase.execute({
+        const {
+          booking,
+          paymentMode,
+          requiresOnlineDeposit,
+          depositPercent,
+          depositAmountCents,
+        } = await createUseCase.execute({
           companySlug,
           facilitySlug: request.body.facilitySlug,
           courtId: request.body.courtId,
@@ -90,6 +99,9 @@ export const createPublicBookingRoute: FastifyPluginAsyncZod = async (app) => {
         return reply.status(201).send({
           booking: toBookingResponse(bookingWithContext),
           paymentMode,
+          requiresOnlineDeposit,
+          depositPercent,
+          depositAmountCents,
         })
       } catch (err) {
         if (

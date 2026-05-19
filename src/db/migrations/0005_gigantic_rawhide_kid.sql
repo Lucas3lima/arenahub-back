@@ -1,2 +1,0 @@
-DROP INDEX "bookings_company_court_starts_at_idx";--> statement-breakpoint
-CREATE UNIQUE INDEX "bookings_company_court_starts_at_idx" ON "bookings" USING btree ("company_id","court_id","starts_at") WHERE "bookings"."status" <> 'cancelled';

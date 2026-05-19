@@ -29,6 +29,9 @@ export const getPublicBookingDetailsRoute: FastifyPluginAsyncZod = async (
           200: z.object({
             booking: bookingResponseSchema,
             canPayOnline: z.boolean(),
+            requiresOnlineDeposit: z.boolean(),
+            depositPercent: z.int().min(0).max(100),
+            depositAmountCents: z.int().min(0),
           }),
           403: z.object({ message: z.string() }),
           404: z.object({ message: z.string() }),
@@ -46,7 +49,13 @@ export const getPublicBookingDetailsRoute: FastifyPluginAsyncZod = async (
           new DrizzleBookingsRepository(),
         )
 
-        const { booking, canPayOnline } = await useCase.execute({
+        const {
+          booking,
+          canPayOnline,
+          requiresOnlineDeposit,
+          depositPercent,
+          depositAmountCents,
+        } = await useCase.execute({
           companySlug,
           bookingId,
         })
@@ -54,6 +63,9 @@ export const getPublicBookingDetailsRoute: FastifyPluginAsyncZod = async (
         return reply.status(200).send({
           booking: toBookingResponse(booking),
           canPayOnline,
+          requiresOnlineDeposit,
+          depositPercent,
+          depositAmountCents,
         })
       } catch (err) {
         if (err instanceof BookingNotFoundError || err instanceof CompanyNotFoundError) {

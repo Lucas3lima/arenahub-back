@@ -14,6 +14,10 @@ import {
   assertWithinCourtOpeningHours,
   calculateBookingPrice,
 } from '../utils/booking-schedule'
+import {
+  calculateDepositAmountCents,
+  resolveCompanyFeatureSettings,
+} from '../utils/company-feature-settings'
 import { ensurePublicCompanyContext } from './_guards/ensure-public-company-context'
 
 interface CreatePublicBookingUseCaseRequest {
@@ -57,7 +61,9 @@ export class CreatePublicBooking {
       plansRepository: this.plansRepository,
     })
 
-    if (!plan.hasOnlineReservations) {
+    const features = resolveCompanyFeatureSettings({ company, plan })
+
+    if (!features.canUseOnlineReservations) {
       throw new OnlineReservationsNotAvailableError()
     }
 
@@ -108,8 +114,23 @@ export class CreatePublicBooking {
       startsAt,
     })
 
-    const status = plan.hasOnlinePayment ? 'pending_payment' : 'confirmed'
-    const paymentExpiresAt = plan.hasOnlinePayment ? addMinutes(now, 15) : null
+    const depositAmountCents = features.requiresOnlineDeposit
+      ? calculateDepositAmountCents({
+          totalPriceCents: price.totalPriceCents,
+          depositPercent: features.depositPercent,
+        })
+      : 0
+
+    // Só fica pending_payment quando a company exige entrada online de fato.
+    // Se ela só permite pagamento online opcional, a reserva já é confirmada
+    // e o cliente paga online ou no balcão depois.
+    const status = features.requiresOnlineDeposit
+      ? 'pending_payment'
+      : 'confirmed'
+    const paymentExpiresAt = features.requiresOnlineDeposit
+      ? addMinutes(now, 15)
+      : null
+
     const booking = await this.bookingsRepository.createWithAvailabilityCheck({
       booking: {
         companyId: company.id,
@@ -131,6 +152,8 @@ export class CreatePublicBooking {
         paidAt: null,
         externalPaymentId: null,
         paymentExpiresAt,
+        depositPercent: features.depositPercent,
+        depositAmountCents,
       },
       now,
     })
@@ -141,9 +164,12 @@ export class CreatePublicBooking {
 
     return {
       booking,
-      paymentMode: plan.hasOnlinePayment
+      paymentMode: features.canUseOnlinePayment
         ? ('online_or_counter' as const)
         : ('counter_only' as const),
+      requiresOnlineDeposit: features.requiresOnlineDeposit,
+      depositPercent: features.depositPercent,
+      depositAmountCents,
     }
   }
 }

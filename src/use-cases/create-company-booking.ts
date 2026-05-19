@@ -25,7 +25,6 @@ interface CreateCompanyBookingUseCaseRequest {
   customerEmail?: string
   customerDocument?: string
   startsAt: Date
-  status?: 'pending_payment' | 'confirmed'
   notes?: string
 }
 
@@ -49,7 +48,6 @@ export class CreateCompanyBooking {
     customerEmail,
     customerDocument,
     startsAt,
-    status = 'confirmed',
     notes,
   }: CreateCompanyBookingUseCaseRequest) {
     const now = new Date()
@@ -115,7 +113,7 @@ export class CreateCompanyBooking {
         customerDocument: customerDocument ?? null,
         startsAt,
         endsAt,
-        status,
+        status: 'confirmed',
         source: 'staff',
         createdByUserId: userId,
         notes: notes ?? null,
@@ -125,8 +123,7 @@ export class CreateCompanyBooking {
         paymentMethod: null,
         paidAt: null,
         externalPaymentId: null,
-        paymentExpiresAt:
-          status === 'pending_payment' ? addMinutes(now, 90) : null,
+        paymentExpiresAt: null,
       },
       now,
     })
@@ -137,10 +134,4 @@ export class CreateCompanyBooking {
 
     return { booking }
   }
-}
-
-function addMinutes(baseDate: Date, minutes: number) {
-  const result = new Date(baseDate)
-  result.setUTCMinutes(result.getUTCMinutes() + minutes)
-  return result
 }

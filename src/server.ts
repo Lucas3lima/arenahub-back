@@ -16,6 +16,8 @@ import fastifyJwt from '@fastify/jwt'
 import fastifyCookie from '@fastify/cookie'
 import { authenticateWithPasswordRoute } from './routes/auth/authenticate-with-password'
 import { createCompaniesRoute } from './routes/companies/create-companies'
+import { getCompanySettingsRoute } from './routes/companies/get-company-settings'
+import { updateCompanySettingsRoute } from './routes/companies/update-company-settings'
 import { createSubscriptionRoute } from './routes/subscriptions/create-subscription'
 import { createFacilityRoute } from './routes/facilities/create-facility'
 import { createCourtRoute } from './routes/courts/create-court'
@@ -69,6 +71,8 @@ app.register(authenticateWithPasswordRoute)
 
 //Companies
 app.register(createCompaniesRoute)
+app.register(getCompanySettingsRoute)
+app.register(updateCompanySettingsRoute)
 
 //Subscriptions
 app.register(createSubscriptionRoute)

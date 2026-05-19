@@ -13,7 +13,11 @@ import { ListCompanyBookings } from '../../use-cases/list-company-bookings'
 import { toBookingResponse } from '../../utils/booking-presentation'
 import { getAuthenticatedUser } from '../../utils/get-authenticate-user'
 import { checkRequestJWT } from '../_hooks/check-request-jwt'
-import { bookingResponseSchema, bookingStatusSchema } from './schemas'
+import {
+  bookingResponseSchema,
+  bookingStatusSchema,
+  paymentStatusSchema,
+} from './schemas'
 
 export const listCompanyBookingsRoute: FastifyPluginAsyncZod = async (app) => {
   app.get(
@@ -31,6 +35,8 @@ export const listCompanyBookingsRoute: FastifyPluginAsyncZod = async (app) => {
           endsAt: z.string().datetime(),
           courtId: z.string().optional(),
           status: bookingStatusSchema.optional(),
+          paymentStatus: paymentStatusSchema.optional(),
+          paymentDue: z.enum(['outstanding']).optional(),
         }),
         response: {
           200: z.object({
@@ -61,6 +67,8 @@ export const listCompanyBookingsRoute: FastifyPluginAsyncZod = async (app) => {
           endsAt: new Date(request.query.endsAt),
           courtId: request.query.courtId,
           status: request.query.status,
+          paymentStatus: request.query.paymentStatus,
+          paymentDue: request.query.paymentDue,
         })
 
         return reply.status(200).send({

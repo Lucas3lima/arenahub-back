@@ -1,6 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BookingSlotUnavailableError } from '../_errors/booking-slot-unavailable-error'
-import { UnauthorizedCompanyAccessError } from '../_errors/unauthorized-company-access-error'
 import { InMemoryBookingsRepository } from '../repositories/in-memory/in-memory-bookings-repository'
 import { InMemoryCompaniesRepository } from '../repositories/in-memory/in-memory-companies-repository'
 import { InMemoryCompanyUsersRepository } from '../repositories/in-memory/in-memory-company-users-repository'
@@ -22,9 +21,15 @@ let subscriptionsRepository: InMemorySubscriptionsRepository
 let facilitiesRepository: InMemoryFacilitiesRepository
 let courtsRepository: InMemoryCourtsRepository
 let bookingsRepository: InMemoryBookingsRepository
+const FROZEN_NOW = new Date('2030-05-11T08:00:00.000Z')
+const TUESDAY_10AM = new Date('2030-05-14T10:00:00.000Z')
+const TUESDAY_10_30AM = new Date('2030-05-14T10:30:00.000Z')
 
 describe('Create company booking', () => {
   beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(FROZEN_NOW)
+
     companiesRepository = new InMemoryCompaniesRepository()
     companyUsersRepository = new InMemoryCompanyUsersRepository()
     plansRepository = new InMemoryPlansRepository()
@@ -38,6 +43,10 @@ describe('Create company booking', () => {
       courtsRepository,
       facilitiesRepository,
     )
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   async function makeScenario(options?: { includeStaffUser?: boolean }) {
@@ -107,13 +116,15 @@ describe('Create company booking', () => {
       userId: ownerUserId,
       courtId: court.id,
       customerName: 'Cliente',
-      startsAt: new Date('2026-05-12T10:00:00.000Z'),
+      startsAt: TUESDAY_10AM,
     })
 
     expect(booking.id).toBeDefined()
     expect(booking.status).toBe('confirmed')
-    expect(booking.startsAt.toISOString()).toBe('2026-05-12T10:00:00.000Z')
-    expect(booking.endsAt.toISOString()).toBe('2026-05-12T11:00:00.000Z')
+    expect(booking.paymentStatus).toBe('unpaid')
+    expect(booking.paymentExpiresAt).toBeNull()
+    expect(booking.startsAt.toISOString()).toBe('2030-05-14T10:00:00.000Z')
+    expect(booking.endsAt.toISOString()).toBe('2030-05-14T11:00:00.000Z')
   })
 
   it('should not create booking when there is overlap with existing booking', async () => {
@@ -125,7 +136,7 @@ describe('Create company booking', () => {
       userId: ownerUserId,
       courtId: court.id,
       customerName: 'Cliente 1',
-      startsAt: new Date('2026-05-12T10:00:00.000Z'),
+      startsAt: TUESDAY_10AM,
     })
 
     await expect(
@@ -134,7 +145,7 @@ describe('Create company booking', () => {
         userId: ownerUserId,
         courtId: court.id,
         customerName: 'Cliente 2',
-        startsAt: new Date('2026-05-12T10:30:00.000Z'),
+        startsAt: TUESDAY_10_30AM,
       }),
     ).rejects.toBeInstanceOf(BookingSlotUnavailableError)
   })
@@ -148,8 +159,8 @@ describe('Create company booking', () => {
       companyId: company.id,
       courtId: court.id,
       customerName: 'Mensalista',
-      startsAt: new Date('2026-05-12T10:00:00.000Z'),
-      endsAt: new Date('2026-05-12T11:00:00.000Z'),
+      startsAt: TUESDAY_10AM,
+      endsAt: new Date('2030-05-14T11:00:00.000Z'),
       recurrenceRule: 'FREQ=WEEKLY',
       status: 'active',
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -162,7 +173,7 @@ describe('Create company booking', () => {
         userId: ownerUserId,
         courtId: court.id,
         customerName: 'Cliente',
-        startsAt: new Date('2026-05-12T10:30:00.000Z'),
+        startsAt: TUESDAY_10_30AM,
       }),
     ).rejects.toBeInstanceOf(BookingSlotUnavailableError)
   })
@@ -177,8 +188,8 @@ describe('Create company booking', () => {
       courtId: court.id,
       title: 'Aula de Iniciacao',
       capacity: 8,
-      startsAt: new Date('2026-05-12T10:00:00.000Z'),
-      endsAt: new Date('2026-05-12T11:00:00.000Z'),
+      startsAt: TUESDAY_10AM,
+      endsAt: new Date('2030-05-14T11:00:00.000Z'),
       recurrenceRule: null,
       status: 'scheduled',
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -191,7 +202,7 @@ describe('Create company booking', () => {
         userId: ownerUserId,
         courtId: court.id,
         customerName: 'Cliente',
-        startsAt: new Date('2026-05-12T10:30:00.000Z'),
+        startsAt: TUESDAY_10_30AM,
       }),
     ).rejects.toBeInstanceOf(BookingSlotUnavailableError)
   })
@@ -211,20 +222,22 @@ describe('Create company booking', () => {
     ).rejects.toBeInstanceOf(BookingSlotUnavailableError)
   })
 
-  it('should allow only owner/admin to create booking', async () => {
+  it('should allow staff to create booking', async () => {
     const { company, staffUserId, court } = await makeScenario({
       includeStaffUser: true,
     })
     const sut = makeSut()
 
-    await expect(
-      sut.execute({
-        companySlug: company.slug,
-        userId: staffUserId as string,
-        courtId: court.id,
-        customerName: 'Cliente',
-        startsAt: new Date('2026-05-12T10:00:00.000Z'),
-      }),
-    ).rejects.toBeInstanceOf(UnauthorizedCompanyAccessError)
+    const { booking } = await sut.execute({
+      companySlug: company.slug,
+      userId: staffUserId as string,
+      courtId: court.id,
+      customerName: 'Cliente',
+      startsAt: TUESDAY_10AM,
+    })
+
+    expect(booking.status).toBe('confirmed')
+    expect(booking.source).toBe('staff')
+    expect(booking.paymentExpiresAt).toBeNull()
   })
 })

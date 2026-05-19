@@ -76,6 +76,9 @@ export class DrizzleBookingsRepository implements BookingsRepository {
     endsAt: Date
     courtId?: string
     status?: (typeof bookings.$inferSelect)['status']
+    paymentStatus?: (typeof bookings.$inferSelect)['paymentStatus']
+    paymentDue?: 'outstanding'
+    now?: Date
   }) {
     const filters = [
       eq(bookings.companyId, params.companyId),
@@ -89,6 +92,16 @@ export class DrizzleBookingsRepository implements BookingsRepository {
 
     if (params.status) {
       filters.push(eq(bookings.status, params.status))
+    }
+    if (params.paymentStatus) {
+      filters.push(eq(bookings.paymentStatus, params.paymentStatus))
+    }
+    if (params.paymentDue === 'outstanding') {
+      filters.push(eq(bookings.status, 'confirmed'))
+      filters.push(inArray(bookings.paymentStatus, ['unpaid', 'partial']))
+      if (params.now) {
+        filters.push(lt(bookings.endsAt, params.now))
+      }
     }
 
     return db
@@ -105,7 +118,7 @@ export class DrizzleBookingsRepository implements BookingsRepository {
       .orderBy(asc(bookings.startsAt), desc(bookings.createdAt))
   }
 
-  async expirePendingPayments(params: {
+  async expirePendingPaymentHolds(params: {
     companyId: string
     now: Date
     courtId?: string
@@ -206,7 +219,7 @@ export class DrizzleBookingsRepository implements BookingsRepository {
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtext(${params.booking.courtId}))`,
       )
-      // Expire pending payments
+      // Expire pending payment holds before conflict checks.
       await tx
         .update(bookings)
         .set({

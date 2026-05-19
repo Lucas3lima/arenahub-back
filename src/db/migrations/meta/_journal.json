@@ -5,50 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1776037889787,
-      "tag": "0000_slim_famine",
+      "when": 1778801371652,
+      "tag": "0000_sturdy_mathemanic",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1776207199825,
-      "tag": "0001_nostalgic_lady_mastermind",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1776816818283,
-      "tag": "0002_lame_adam_warlock",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1776984559608,
-      "tag": "0003_silent_tusk",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1778027045158,
-      "tag": "0004_windy_black_tarantula",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1778631420677,
-      "tag": "0005_gigantic_rawhide_kid",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1778631549203,
-      "tag": "0006_organic_sebastian_shaw",
+      "when": 1778809807682,
+      "tag": "0001_cultured_wolverine",
       "breakpoints": true
     }
   ]
