@@ -44,7 +44,7 @@ Definir o desenho do futuro use case `ConfirmBookingPayment` para:
 
 ## Pontos de implementação
 
-- Novo use case em `src/use-cases/confirm-booking-payment.ts`.
+- Novo use case em `src/use-cases/bookings/confirm-booking-payment.ts`.
 - Nova rota webhook/callback ou endpoint interno em `src/routes/bookings`.
 - Método de repositório para update atômico por `bookingId` + estado esperado.
 - Testes unitários cobrindo:

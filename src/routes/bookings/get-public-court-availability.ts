@@ -12,7 +12,7 @@ import { DrizzleCourtsRepository } from '../../repositories/drizzle/drizzle-cour
 import { DrizzleFacilitiesRepository } from '../../repositories/drizzle/drizzle-facilities-repository'
 import { DrizzlePlansRepository } from '../../repositories/drizzle/drizzle-plans-repository'
 import { DrizzleSubscriptionsRepository } from '../../repositories/drizzle/drizzle-subscriptions-repository'
-import { GetPublicCourtAvailability } from '../../use-cases/get-public-court-availability'
+import { GetPublicCourtAvailability } from '../../use-cases/bookings/get-public-court-availability'
 import { availabilitySlotSchema } from './schemas'
 
 export const getPublicCourtAvailabilityRoute: FastifyPluginAsyncZod = async (

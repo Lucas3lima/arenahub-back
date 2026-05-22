@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import z from 'zod'
 import { DrizzleUsersRepository } from '../../repositories/drizzle/drizzle-users-repository'
-import { AuthenticateWithPassword } from '../../use-cases/authenticate-with-password'
+import { AuthenticateWithPassword } from '../../use-cases/auth/authenticate-with-password'
 import { env } from '../../env'
 import { InvalidCredentialsError } from '../../_errors/invalid-credentials-error'
 

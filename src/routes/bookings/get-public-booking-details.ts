@@ -8,7 +8,7 @@ import { DrizzleBookingsRepository } from '../../repositories/drizzle/drizzle-bo
 import { DrizzleCompaniesRepository } from '../../repositories/drizzle/drizzle-companies-repository'
 import { DrizzlePlansRepository } from '../../repositories/drizzle/drizzle-plans-repository'
 import { DrizzleSubscriptionsRepository } from '../../repositories/drizzle/drizzle-subscriptions-repository'
-import { GetPublicBookingDetails } from '../../use-cases/get-public-booking-details'
+import { GetPublicBookingDetails } from '../../use-cases/bookings/get-public-booking-details'
 import { toBookingResponse } from '../../utils/booking-presentation'
 import { bookingResponseSchema } from './schemas'
 

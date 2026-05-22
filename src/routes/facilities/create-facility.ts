@@ -11,7 +11,7 @@ import { DrizzleCompanyUsersRepository } from '../../repositories/drizzle/drizzl
 import { DrizzleFacilitiesRepository } from '../../repositories/drizzle/drizzle-facilities-repository'
 import { DrizzlePlansRepository } from '../../repositories/drizzle/drizzle-plans-repository'
 import { DrizzleSubscriptionsRepository } from '../../repositories/drizzle/drizzle-subscriptions-repository'
-import { CreateFacility } from '../../use-cases/create-facility'
+import { CreateFacility } from '../../use-cases/facilities/create-facility'
 import { getAuthenticatedUser } from '../../utils/get-authenticate-user'
 import { checkRequestJWT } from '../_hooks/check-request-jwt'
 

@@ -13,7 +13,7 @@ import { DrizzleCourtsRepository } from '../../repositories/drizzle/drizzle-cour
 import { DrizzleFacilitiesRepository } from '../../repositories/drizzle/drizzle-facilities-repository'
 import { DrizzlePlansRepository } from '../../repositories/drizzle/drizzle-plans-repository'
 import { DrizzleSubscriptionsRepository } from '../../repositories/drizzle/drizzle-subscriptions-repository'
-import { CreateCourt } from '../../use-cases/create-court'
+import { CreateCourt } from '../../use-cases/courts/create-court'
 import { toCourtResponse } from '../../utils/court-presentation'
 import { getAuthenticatedUser } from '../../utils/get-authenticate-user'
 import { checkRequestJWT } from '../_hooks/check-request-jwt'

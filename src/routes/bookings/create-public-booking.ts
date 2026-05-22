@@ -14,8 +14,8 @@ import { DrizzleCourtsRepository } from '../../repositories/drizzle/drizzle-cour
 import { DrizzleFacilitiesRepository } from '../../repositories/drizzle/drizzle-facilities-repository'
 import { DrizzlePlansRepository } from '../../repositories/drizzle/drizzle-plans-repository'
 import { DrizzleSubscriptionsRepository } from '../../repositories/drizzle/drizzle-subscriptions-repository'
-import { CreatePublicBooking } from '../../use-cases/create-public-booking'
-import { GetPublicBookingDetails } from '../../use-cases/get-public-booking-details'
+import { CreatePublicBooking } from '../../use-cases/bookings/create-public-booking'
+import { GetPublicBookingDetails } from '../../use-cases/bookings/get-public-booking-details'
 import { toBookingResponse } from '../../utils/booking-presentation'
 import { bookingResponseSchema } from './schemas'
 

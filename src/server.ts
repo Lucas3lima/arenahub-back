@@ -15,6 +15,7 @@ import { createAccountRoute } from './routes/auth/create-accounts'
 import fastifyJwt from '@fastify/jwt'
 import fastifyCookie from '@fastify/cookie'
 import { authenticateWithPasswordRoute } from './routes/auth/authenticate-with-password'
+import { getProfileRoute } from './routes/auth/get-profile'
 import { createCompaniesRoute } from './routes/companies/create-companies'
 import { getCompanySettingsRoute } from './routes/companies/get-company-settings'
 import { updateCompanySettingsRoute } from './routes/companies/update-company-settings'
@@ -68,6 +69,7 @@ app.register(ScalarApiReference, {
 
 app.register(createAccountRoute)
 app.register(authenticateWithPasswordRoute)
+app.register(getProfileRoute)
 
 //Companies
 app.register(createCompaniesRoute)
